@@ -25,7 +25,7 @@ class AnoModel(object):
         self._varibles.append(tfeature)
         self._varibles.append(sfeature)
 
-        with tf.variable_scope("dense", reuse=tf.AUTO_REUSE) as scp:
+        with tf.compat.v1.variable_scope("dense", reuse=tf.compat.v1.AUTO_REUSE) as scp:
             for i,lsize in enumerate(self._tf_units):
                 tfeature = tf.layers.dense(inputs=tfeature, units=lsize, activation=tf.nn.relu, name="tf_dense_{}".format(i))
 
@@ -40,7 +40,7 @@ class AnoModel(object):
                 x = tf.layers.dense(inputs=x, units=lsize, activation=tf.nn.relu, name="st_dense_{}".format(i))
 
         st_dim = self._st_units[-1]
-        with tf.variable_scope("output", reuse=tf.AUTO_REUSE) as scp:
+        with tf.compat.v1.variable_scope("output", reuse=tf.compat.v1.AUTO_REUSE) as scp:
             W = tf.get_variable(name="output_weight",
                                 initializer=tf.truncated_normal((st_dim, self._out_dim), dtype=tf.float32, stddev=1e-1))
 
@@ -51,20 +51,20 @@ class AnoModel(object):
         return y, st_feature
 
     def construct_loss(self):
-
+        tf.compat.v1.disable_eager_execution()
         st_dim = self._tf_dim + self._sf_dim
-        self.x0 = tf.placeholder(tf.float32, shape=(self._batch_size, st_dim))
+        self.x0 = tf.compat.v1.placeholder(tf.float32, shape=(self._batch_size, st_dim))
         tfeature0 = self.x0[:, :self._tf_dim]
         sfeature0 = self.x0[:, -self._sf_dim:]
         y_pred0, stfeature0 = self.forward(tfeature0, sfeature0)
 
-        self.x1 = tf.placeholder(tf.float32, shape=(self._batch_size, st_dim))
+        self.x1 = tf.compat.v1.placeholder(tf.float32, shape=(self._batch_size, st_dim))
         tfeature1 = self.x1[:, :self._tf_dim]
         sfeature1 = self.x1[:, -self._sf_dim:]
         y_pred1, stfeature1 = self.forward(tfeature1, sfeature1)
 
-        self.y0 = tf.placeholder(tf.float32, shape=(self._batch_size, self._out_dim))
-        self.y1 = tf.placeholder(tf.float32, shape=(self._batch_size, self._out_dim))
+        self.y0 = tf.compat.v1.placeholder(tf.float32, shape=(self._batch_size, self._out_dim))
+        self.y1 = tf.compat.v1.placeholder(tf.float32, shape=(self._batch_size, self._out_dim))
 
         self.pred_loss = tf.losses.mean_squared_error(self.y0, y_pred0) + tf.losses.mean_squared_error(self.y1, y_pred1)
 
@@ -77,9 +77,9 @@ class AnoModel(object):
 
     def decompose(self):
 
-        self._sfeature = tf.placeholder(tf.float32, shape=(None, self._sf_dim))
-        self._tfeature = tf.placeholder(tf.float32, shape=(None, self._tf_dim))
-        self._flow = tf.placeholder(tf.float32, shape=(None, self._out_dim))
+        self._sfeature = tf.compat.v1.placeholder(tf.float32, shape=(None, self._sf_dim))
+        self._tfeature = tf.compat.v1.placeholder(tf.float32, shape=(None, self._tf_dim))
+        self._flow = tf.compat.v1.placeholder(tf.float32, shape=(None, self._out_dim))
 
         y_pred, self.stfeature  = self.forward(self._tfeature, self._sfeature)
         err = y_pred - self._flow

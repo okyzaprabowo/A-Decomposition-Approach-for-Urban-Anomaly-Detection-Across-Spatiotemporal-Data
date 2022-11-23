@@ -59,7 +59,7 @@ def geo_embed(flow, embed_size=EMBEDSIZE):
     # print("Start embedding")
     model = Word2Vec(walks,
                      sg=1,
-                     size=embed_size,
+                     vector_size=embed_size,
                      window=3,
                      min_count=2,
                      negative=3,
@@ -68,5 +68,6 @@ def geo_embed(flow, embed_size=EMBEDSIZE):
                      workers=8)
     features = np.zeros((n, embed_size))
     for i in range(n):
-        features[i, :] = model[str(i)]
+        features[i, :] = model.wv[str(i)].reshape((1, embed_size))
+        # features[i, :] = model[str(i)]
     return features
